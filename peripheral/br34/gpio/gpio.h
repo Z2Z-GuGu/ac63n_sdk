@@ -156,6 +156,15 @@ int gpio_write(u32 gpio, u32 value);
 int gpio_set_output_value(u32 gpio, u32 value);
 
 /**
+ * @brief gpio_toggle，反转引脚的输出电平，引脚为输出模式时才有效
+ *
+ * @param gpio 参考宏IO_PORTx_xx，如IO_PORTA_00
+ *
+ * @return 0：成功  非0：失败
+ */
+int gpio_toggle(u32 gpio);
+
+/**
  * @brief gpio_direction_output，设置引脚的方向为输出，并设置一下电平
  *
  * @param gpio 参考宏IO_PORTx_xx，如IO_PORTA_00

@@ -307,6 +307,24 @@ int gpio_write(u32 gpio, u32 value)
     return 0;
 }
 __attribute__((always_inline_when_const_args))
+int gpio_toggle(u32 gpio)
+{
+    u32 mask;
+    struct gpio_reg *g;
+    if (gpio == IO_PORT_DP) {
+        return gpio_write(gpio, !gpio_read(gpio));
+    } else if (gpio == IO_PORT_DM) {
+        return gpio_write(gpio, !gpio_read(gpio));
+    }
+    g = gpio2reg(gpio);
+    if (!g) {
+        return -EINVAL;
+    }
+    mask = __gpio_mask(gpio);
+    g->out ^= mask;	//反转输出锁存位
+    return 0;
+}
+__attribute__((always_inline_when_const_args))
 int gpio_out(u32 gpio, u32 start, u32 len, u32 dat)
 {
     struct gpio_reg *g;
