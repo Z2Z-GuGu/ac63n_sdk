@@ -66,9 +66,28 @@ void maskrom_init()
     local_irq_enable();
 }
 
+/* 系统初始化（供业务 main 调用，配置时钟/端口/关键外设） */
+void system_init(void)
+{
+    wdt_close();
+
+    clk_voltage_mode(CLOCK_MODE_ADAPTIVE, SYSVDD_VOL_SEL_126V);
+    // clk_early_init(SYS_CLOCK_INPUT_PLL_RCL, 32768, 24000000);    // 默认不使用内置LRC时钟
+    clk_early_init(SYS_CLOCK_INPUT_PLL_BT_OSC, 24000000, 24000000);
+
+    port_init();
+
+    p11_init();     //P11 系统必须提前打开
+
+    resfile_init(); // 必须打开
+
+    request_irq(1, 2, exception_irq_handler, 0);
+}
+
 u32 stack_magic[4] sec(.stack_magic);
 u32 stack_magic0[4] sec(.stack_magic0);
 
+#ifndef JL_DISABLE_BOOT_MAIN
 int main()
 {
     wdt_init(WDT_4S);
@@ -116,3 +135,4 @@ int main()
 
     return 0;
 }
+#endif /* JL_DISABLE_BOOT_MAIN */

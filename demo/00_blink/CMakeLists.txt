@@ -22,6 +22,9 @@ set(JL_REGISTER_TOP_DIR "${CMAKE_SOURCE_DIR}")
 # ---- 导入 SDK：解析路径 + 选择平台 + 载入平台编译参数 ----
 include(${CMAKE_CURRENT_LIST_DIR}/ac63n_sdk_import.cmake)
 
+# 本 demo 提供强 main()（main.c），屏蔽 boot 库中的 int main()
+list(APPEND DEFINES -DJL_DISABLE_BOOT_MAIN)
+
 # ---- 加载 SDK 各模块（逐级 add_subdirectory）----
 add_subdirectory(${JL_SDK_ROOT}/core        ${CMAKE_CURRENT_BINARY_DIR}/sdk/core)
 add_subdirectory(${JL_SDK_ROOT}/peripheral  ${CMAKE_CURRENT_BINARY_DIR}/sdk/peripheral)

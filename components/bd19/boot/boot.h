@@ -51,7 +51,21 @@ typedef struct boot_device_info {
 } BOOT_DEVICE_INFO;
 
 
+void system_init(void);		// 系统初始化（时钟/端口/关键外设）
+
 extern BOOT_INFO boot_info;
+
+/* ============ 系统引导相关的外部符号 ============ */
+extern void check_upgrade();
+extern void board_init();
+extern void debug_uart_early_init();
+extern void exception_irq_handler();
+extern void vm_init_app();
+extern int  app_version_check();
+
+/* bd19：栈溢出检测魔数，定义于 boot.c 的 .stack_magic 段 */
+extern u32 stack_magic[4];
+extern u32 stack_magic0[4];
 
 #endif
 
