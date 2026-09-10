@@ -2,11 +2,11 @@
  * @file main.c
  * @brief AC632N (bd19) LED 闪烁示例程序
  *
- * 入口 user_main() 由 core/bd19/src/boot.c 中的 main() 完成系统初始化后调用。
+ * 入口 user_main() 由 components/bd19/boot/boot.c 中的 main() 完成系统初始化后调用。
  * 程序把 LED 引脚配置为推挽输出，并在主循环中低电平点亮 / 高电平熄灭循环翻转。
  */
 
-#include "asm/includes.h"
+#include "includes.h"
 #include "msg.h"
 #include "typedef.h"
 #include "printf.h"
