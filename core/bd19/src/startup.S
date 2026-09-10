@@ -1,0 +1,148 @@
+
+.section .stack, "a"
+         .space 0x800
+         .global _stack_ssp
+_stack_ssp:
+
+.section .stack, "a"
+         .space 0x1000
+         .global _stack_usp
+_stack_usp:
+
+.section .startup.text, "ax"
+    .align 2
+    .global _start
+    .type _start,@function
+    .org 0
+
+_start:
+cpu0_start:
+	sp = _stack_usp    	// for idle
+    ssp = _stack_ssp   	// for interrupt
+
+    call boot_info_init
+
+   r0 = 0
+   r1 = bss_begin
+   r2 = bss_size
+   r2 >>= 2
+
+   goto .L_bss_cmp
+.L_bss_clr:
+   [r1++] = r0
+.L_bss_cmp:
+   r2 -= 1
+   ifs(r2 >= 0) goto .L_bss_clr
+
+;    r0 = 0
+;    r1 = nvbss_begin
+;    r2 = nvbss_size
+;    r2 >>= 2
+;
+;    goto .L_nvbss_cmp
+; .L_nvbss_clr:
+;    [r1++] = r0
+; .L_nvbss_cmp:
+;    r2 -= 1
+;    ifs(r2 >= 0) goto .L_nvbss_clr
+
+   r0 = data_addr
+   r1 = data_begin
+   r2 = data_size
+   r2 >>= 2
+
+   goto .L_data_cmp
+.L_data_clr:
+    r3 = [r1++]
+    [r0++] = r3
+.L_data_cmp:
+   r2 -= 1
+   ifs(r2 >= 0) goto .L_data_clr
+
+   r0 = data_code_addr
+   r1 = data_code_begin
+   r2 = data_code_size
+   r2 >>= 2
+
+   goto .L_data_code_cmp
+.L_data_code_clr:
+    r3 = [r1++]
+    [r0++] = r3
+.L_data_code_cmp:
+   r2 -= 1
+   ifs(r2 >= 0) goto .L_data_code_clr
+
+    r2 = icfg
+    r2 &= 0xfffffcff
+    r2 |= 0x100
+    icfg = r2
+
+    ; .extern update_result_get
+	; call update_result_get
+
+    .extern maskrom_init
+    call maskrom_init
+
+    .extern main
+    goto main
+
+
+.extern debug_exception_analyze
+// void exception_analyze(unsigned *sp)
+.global exception_irq_handler
+.type exception_irq_handler, @function
+//.section .volatile_ram_code
+exception_irq_handler:
+	[--sp] = {reti, rete, retx, rets, psr, icfg, usp, ssp}
+	[--sp] = {r15-r0}
+
+	r0 = sp // 把当前 sp 的值作为参数传递给解析函数
+    call debug_exception_analyze
+
+1:
+	goto 1b // 死循环
+
+.size exception_irq_handler, . - exception_irq_handler
+
+
+
+
+.global usb_upgrade_mode
+.type usb_upgrade_mode, @function
+.section .volatile_ram_code
+usb_upgrade_mode:
+
+    ; call debug_disable
+    call hw_mmu_disable
+
+    r0 = 0
+	r1 = 0x28000
+	r2 = 0x69e0
+    r2 >>= 2
+
+    goto .L_ram_cmp
+.L_ram_clr:
+    [r1++] = r0
+.L_ram_cmp:
+    r2 -= 1
+    ifs(r2 >= 0) goto .L_ram_clr
+	; rep r2 {
+	; [r1++] = r0
+	; }
+    ; if(r2 > 0) goto .L_ram_clr
+
+    ssp = 0x28c20
+    usp = 0x29020
+    sp = usp
+
+    reti = 0x107716
+    rti
+
+.size usb_upgrade_mode, . - usb_upgrade_mode
+
+
+
+
+
+
+
