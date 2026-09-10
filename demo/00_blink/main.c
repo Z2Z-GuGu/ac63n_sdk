@@ -11,8 +11,15 @@
 #include "typedef.h"
 #include "printf.h"
 
-/* LED 引脚：默认接在 IO_PORTB_07，低电平点亮，高电平熄灭 */
+/* LED 引脚（由 demo CMakeLists 传入的平台宏决定）：
+ *   AC632N：IO_PORTB_07，低电平点亮，高电平熄灭
+ *   AC628N（AC638N）：IO_PORTA_01
+ */
+#if defined(AC628N)
+#define LED_IO      IO_PORTA_01
+#else
 #define LED_IO      IO_PORTB_07
+#endif
 #define LED_ON()    gpio_write(LED_IO, 0)
 #define LED_OFF()   gpio_write(LED_IO, 1)
 
