@@ -3,8 +3,8 @@
 #
 # 由项目根目录 CMakeLists.txt 以 include() 方式导入（共享作用域），
 # 完成以下职责：
-#   1) 依据系统环境变量 AC63N_SDK_PATH / AC63N_TOOLCHAIN_PATH
-#      解析 SDK 根目录与工具链位置（未设置时回退相对推导）；
+#   1) SDK 根目录取本文件相对路径（tools/cmake 的上级上级）；
+#      工具链位置依据 AC63N_TOOLS_PATH/toolchain（或回退 SDK 内默认目录）；
 #   2) cmake .. 时弹出平台选择菜单，确定
 #       JL_PLATFORM_NAME / JL_CHIP_PLATFORM / JL_CORE；
 #   3) 定义 SDK 子模块注册函数 jl_register()；
@@ -13,14 +13,10 @@
 # =============================================================
 
 # -------------------------------------------------------------
-# 一、SDK 根目录（优先读系统环境变量）
+# 一、SDK 根目录（本文件位于 tools/cmake/，其上级上级即 SDK 根）
 #     JL_TOOLCHAIN_ROOT 依赖 JL_CORE，需待平台选定后在第三部分计算。
 # -------------------------------------------------------------
-if(DEFINED ENV{AC63N_SDK_PATH} AND NOT "$ENV{AC63N_SDK_PATH}" STREQUAL "")
-  set(JL_SDK_ROOT "$ENV{AC63N_SDK_PATH}")
-else()
-  set(JL_SDK_ROOT "${CMAKE_CURRENT_LIST_DIR}/../..")
-endif()
+set(JL_SDK_ROOT "${CMAKE_CURRENT_LIST_DIR}/../..")   # SDK 根目录
 
 # -------------------------------------------------------------
 # 二、芯片平台选择（每次 cmake .. 弹菜单询问）
@@ -99,8 +95,8 @@ set(ENV{JL_CORE}          ${JL_CORE})
 # -------------------------------------------------------------
 # 三、工具链路径（依赖已选定的 JL_CORE）+ 存在性检查
 # -------------------------------------------------------------
-if(DEFINED ENV{AC63N_TOOLCHAIN_PATH} AND NOT "$ENV{AC63N_TOOLCHAIN_PATH}" STREQUAL "")
-  set(JL_TOOLCHAIN_ROOT "$ENV{AC63N_TOOLCHAIN_PATH}/${JL_CORE}")
+if(DEFINED ENV{AC63N_TOOLS_PATH} AND NOT "$ENV{AC63N_TOOLS_PATH}" STREQUAL "")
+  set(JL_TOOLCHAIN_ROOT "$ENV{AC63N_TOOLS_PATH}/toolchain/${JL_CORE}")
 else()
   set(JL_TOOLCHAIN_ROOT "${JL_SDK_ROOT}/tools/linux/toolchain/${JL_CORE}")
 endif()
@@ -144,3 +140,6 @@ if(NOT EXISTS "${_platform_cmake}")
   message(FATAL_ERROR "[sdk_import] 未找到平台编译配置 ${_platform_cmake}")
 endif()
 include("${_platform_cmake}")
+
+# 本 demo 提供强 main()（main.c），屏蔽 boot 库中的 int main()
+list(APPEND DEFINES -DJL_DISABLE_BOOT_MAIN)
